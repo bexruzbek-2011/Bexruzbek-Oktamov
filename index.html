@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <meta name="description" content="BUILT DIFFERENT. — Interactive BMW M4 Automotive Campaign & 3D Showroom Experience." />
+  <meta name="theme-color" content="#050608" />
+  <title>BMW M4 — BUILT DIFFERENT.</title>
+
+  <!-- Editorial & Display Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Syne:wght@700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Import Map for Three.js & GSAP ES Modules -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.168.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.168.0/examples/jsm/",
+        "gsap": "https://cdn.jsdelivr.net/npm/gsap@3.12.5/index.js",
+        "gsap/ScrollTrigger": "https://cdn.jsdelivr.net/npm/gsap@3.12.5/ScrollTrigger.js",
+        "gsap/ScrollToPlugin": "https://cdn.jsdelivr.net/npm/gsap@3.12.5/ScrollToPlugin.js"
+      }
+    }
+  </script>
+</head>
+<body class="is-loading">
+
+  <!-- Cinematic Preloader -->
+  <div class="loader" id="loader" role="status" aria-live="polite">
+    <div class="loader__grid">
+      <div class="loader__top">
+        <div class="m-stripes" aria-hidden="true">
+          <span class="m-stripe m-stripe--light-blue"></span>
+          <span class="m-stripe m-stripe--dark-blue"></span>
+          <span class="m-stripe m-stripe--red"></span>
+        </div>
+        <span class="loader__code">G82 // M-DIVISION STUDIO</span>
+      </div>
+      <div class="loader__center">
+        <div class="loader__counter-wrap">
+          <span class="loader__counter" id="loader-counter">000</span>
+          <span class="loader__percent">%</span>
+        </div>
+        <div class="loader__bar-track">
+          <div class="loader__bar-fill" id="loader-bar"></div>
+        </div>
+      </div>
+      <div class="loader__bottom">
+        <span id="loader-status">INITIALIZING WEBGL STUDIO ENVIRONMENT</span>
+        <span>48.1769° N, 11.5561° E</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Persistent Fixed WebGL 3D Viewport -->
+  <div class="stage" id="stage" aria-label="Interactive 3D BMW M4 Viewport">
+    <canvas id="webgl-canvas"></canvas>
+    <div class="stage__vignette" aria-hidden="true"></div>
+    <div class="stage__scanlines" aria-hidden="true"></div>
+    <div class="stage__ambient-glow" aria-hidden="true"></div>
+
+    <!-- 3D Projected Hotspots Layer (Active in Scene 03) -->
+    <div class="hotspots-layer" id="hotspots-layer" aria-hidden="true"></div>
+  </div>
+
+  <!-- Minimal Top HUD Navigation -->
+  <header class="hud-header" id="hud-header">
+    <a href="#scene-01" class="hud-brand">
+      <span class="m-stripes m-stripes--sm" aria-hidden="true">
+        <span class="m-stripe m-stripe--light-blue"></span>
+        <span class="m-stripe m-stripe--dark-blue"></span>
+        <span class="m-stripe m-stripe--red"></span>
+      </span>
+      <span class="hud-brand__title">BMW <strong>M4</strong></span>
+    </a>
+
+    <nav class="hud-nav" aria-label="Campaign Scenes">
+      <a href="#scene-01" class="hud-nav__link is-active" data-scene="0">01 // INTRO</a>
+      <a href="#scene-02" class="hud-nav__link" data-scene="1">02 // MACHINE</a>
+      <a href="#scene-03" class="hud-nav__link" data-scene="2">03 // DETAIL</a>
+      <a href="#scene-04" class="hud-nav__link" data-scene="3">04 // PERFORMANCE</a>
+      <a href="#scene-05" class="hud-nav__link" data-scene="4">05 // DESIGN</a>
+      <a href="#scene-06" class="hud-nav__link" data-scene="5">06 // FINAL</a>
+    </nav>
+
+    <div class="hud-actions">
+      <div class="model-status" id="model-status" title="3D Asset Pipeline Status">
+        <span class="model-status__dot"></span>
+        <span class="model-status__text" id="model-status-text">STUDIO RIG</span>
+      </div>
+      <button class="menu-toggle" id="menu-toggle" aria-label="Toggle Navigation Menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile / Fullscreen Navigation Drawer -->
+  <div class="nav-drawer" id="nav-drawer" aria-hidden="true">
+    <div class="nav-drawer__inner">
+      <div class="nav-drawer__meta">CAMPAIGN INDEX // BMW M4</div>
+      <ul class="nav-drawer__list">
+        <li><a href="#scene-01" class="nav-drawer__link"><span>01</span> BUILT DIFFERENT.</a></li>
+        <li><a href="#scene-02" class="nav-drawer__link"><span>02</span> THE MACHINE</a></li>
+        <li><a href="#scene-03" class="nav-drawer__link"><span>03</span> DETAIL.</a></li>
+        <li><a href="#scene-04" class="nav-drawer__link"><span>04</span> PERFORMANCE.</a></li>
+        <li><a href="#scene-05" class="nav-drawer__link"><span>05</span> DESIGN.</a></li>
+        <li><a href="#scene-06" class="nav-drawer__link"><span>06</span> FINAL FRAME.</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Vertical Scroll Progress Rail -->
+  <aside class="progress-rail" aria-hidden="true">
+    <span class="progress-rail__index" id="progress-index">01</span>
+    <div class="progress-rail__track">
+      <div class="progress-rail__fill" id="progress-fill"></div>
+    </div>
+    <span class="progress-rail__total">06</span>
+  </aside>
+
+  <!-- MAIN CINEMATIC SCROLL CONTAINER -->
+  <main id="smooth-content">
+
+    <!-- SCENE 01 — BUILT DIFFERENT. -->
+    <section class="scene scene--hero" id="scene-01" data-scene-index="0">
+      <div class="hero-composition">
+        <div class="hero-kicker">
+          <span class="hero-kicker__tag">M-SERIES // COUPE ARCHITECTURE</span>
+          <span class="hero-kicker__line"></span>
+          <span class="hero-kicker__sub">PRECISION ENGINEERED</span>
+        </div>
+
+        <div class="hero-headline-stack">
+          <div class="hero-word-mask hero-word-mask--back">
+            <h1 class="hero-word hero-word--built" id="hero-built">BUILT</h1>
+          </div>
+          <div class="hero-word-mask hero-word-mask--front">
+            <span class="hero-word hero-word--different" id="hero-different">DIFFERENT<span class="accent-dot">.</span></span>
+          </div>
+        </div>
+
+        <div class="hero-footer">
+          <p class="hero-statement">
+            Sculpted aerodynamics, rear-biased M dynamics, and unmistakable track posture.
+          </p>
+
+          <a href="#scene-02" class="scroll-cue">
+            <span class="scroll-cue__label">SCROLL TO ENTER</span>
+            <span class="scroll-cue__line">
+              <span class="scroll-cue__pulse"></span>
+            </span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCENE 02 — THE MACHINE -->
+    <section class="scene scene--machine" id="scene-02" data-scene-index="1">
+      <div class="machine-hud">
+        <div class="machine-hud__header">
+          <span class="eyebrow">02 // INTERACTIVE 3D SHOWROOM</span>
+          <h2 class="section-title">THE MACHINE<span class="accent-dot">.</span></h2>
+          <p class="machine-hud__hint">Drag to orbit 360° &bull; Scroll or pinch to zoom &bull; Select camera angles</p>
+        </div>
+
+        <div class="machine-controls" role="toolbar" aria-label="3D Camera Controls">
+          <div class="control-group">
+            <button class="ctrl-btn is-active" data-cam-preset="threeQuarter">3/4 HERO</button>
+            <button class="ctrl-btn" data-cam-preset="front">FRONT</button>
+            <button class="ctrl-btn" data-cam-preset="side">PROFILE</button>
+            <button class="ctrl-btn" data-cam-preset="rear">REAR</button>
+            <button class="ctrl-btn" data-cam-preset="low">LOW ANGLE</button>
+          </div>
+
+          <div class="control-group control-group--secondary">
+            <button class="ctrl-btn ctrl-btn--icon" id="btn-auto-rotate" aria-pressed="true" title="Toggle Auto Rotation">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
+                <path d="M21 3v5h-5" />
+              </svg>
+              <span>ORBIT</span>
+            </button>
+
+            <button class="ctrl-btn ctrl-btn--icon" id="btn-studio-light" aria-pressed="false" title="Switch Studio Lighting Mode">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+              </svg>
+              <span id="light-mode-label">SILVER STUDIO</span>
+            </button>
+
+            <button class="ctrl-btn ctrl-btn--accent" id="btn-reset-cam">
+              RESET VIEW
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCENE 03 — DETAIL. -->
+    <section class="scene scene--detail" id="scene-03" data-scene-index="2">
+      <div class="detail-layout">
+        <div class="detail-intro" id="detail-intro">
+          <span class="eyebrow">03 // COMPONENT INSPECTION</span>
+          <h2 class="section-title">DETAIL<span class="accent-dot">.</span></h2>
+          <p class="detail-intro__copy">
+            Select any illuminated anchor directly on the vehicle or choose a subsystem below to inspect exterior engineering.
+          </p>
+
+          <div class="hotspot-pills" id="hotspot-pills" role="list"></div>
+        </div>
+
+        <aside class="inspector-panel" id="inspector-panel" aria-live="polite" aria-hidden="true">
+          <div class="inspector-panel__top">
+            <span class="inspector-panel__code" id="inspector-code">COMP // 01</span>
+            <button class="inspector-panel__close" id="inspector-close" aria-label="Return to full vehicle view">
+              <span>FULL VEHICLE</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <h3 class="inspector-panel__title" id="inspector-title">HEADLIGHTS</h3>
+          <div class="inspector-panel__divider"></div>
+          <p class="inspector-panel__desc" id="inspector-desc">
+            Distinctive BMW M lighting design with sharp angular daytime running light signatures engineered for immediate visual presence.
+          </p>
+          <div class="inspector-panel__meta">
+            <span class="inspector-panel__tag" id="inspector-tag">EXTERIOR OPTICS</span>
+            <div class="inspector-panel__nav">
+              <button class="inspector-step-btn" id="inspector-prev" aria-label="Previous component">&larr;</button>
+              <button class="inspector-step-btn" id="inspector-next" aria-label="Next component">&rarr;</button>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- SCENE 04 — PERFORMANCE. -->
+    <section class="scene scene--performance" id="scene-04" data-scene-index="3">
+      <div class="kinetic-marquee" aria-hidden="true">
+        <div class="kinetic-marquee__track" id="marquee-track">
+          <span>M TWINPOWER TURBO &mdash; BUILT DIFFERENT &mdash; TRACK CALIBRATED &mdash; </span>
+          <span>M TWINPOWER TURBO &mdash; BUILT DIFFERENT &mdash; TRACK CALIBRATED &mdash; </span>
+        </div>
+      </div>
+
+      <div class="perf-container">
+        <div class="perf-header">
+          <span class="eyebrow">04 // POWERTRAIN &amp; DYNAMICS</span>
+          <h2 class="section-title">PERFORMANCE<span class="accent-dot">.</span></h2>
+        </div>
+
+        <div class="perf-metrics">
+          <article class="metric-row" data-reveal>
+            <div class="metric-row__index">01</div>
+            <div class="metric-row__value">
+              <span class="metric-num" data-target="3.0" data-decimals="1">0.0</span>
+              <span class="metric-unit">L</span>
+            </div>
+            <div class="metric-row__info">
+              <h3 class="metric-row__label">M TWINPOWER TURBO INLINE-6</h3>
+              <p class="metric-row__note">High-revving six-cylinder architecture developed with motorsport cooling and lubrication systems.</p>
+            </div>
+          </article>
+
+          <article class="metric-row" data-reveal>
+            <div class="metric-row__index">02</div>
+            <div class="metric-row__value">
+              <span class="metric-num" data-target="503" data-decimals="0">0</span>
+              <span class="metric-unit">HP</span>
+            </div>
+            <div class="metric-row__info">
+              <h3 class="metric-row__label">PEAK OUTPUT (M4 COMPETITION)</h3>
+              <p class="metric-row__note">Reference figure for BMW M4 Competition Coupe configuration; output varies by model specification.</p>
+            </div>
+          </article>
+
+          <article class="metric-row" data-reveal>
+            <div class="metric-row__index">03</div>
+            <div class="metric-row__value">
+              <span class="metric-num" data-target="3.8" data-decimals="1">0.0</span>
+              <span class="metric-unit">SEC</span>
+            </div>
+            <div class="metric-row__info">
+              <h3 class="metric-row__label">0&ndash;60 MPH ACCELERATION</h3>
+              <p class="metric-row__note">Reference benchmark for rear-wheel-drive M4 Competition with 8-speed M Steptronic transmission.</p>
+            </div>
+          </article>
+
+          <article class="metric-row" data-reveal>
+            <div class="metric-row__index">04</div>
+            <div class="metric-row__value">
+              <span class="metric-num" data-target="50" data-decimals="0">0</span>
+              <span class="metric-unit">:50</span>
+            </div>
+            <div class="metric-row__info">
+              <h3 class="metric-row__label">NEAR-BALANCED AXLE DISTRIBUTION</h3>
+              <p class="metric-row__note">Low center of gravity, wide track stance, and adaptive M suspension for crisp turn-in.</p>
+            </div>
+          </article>
+        </div>
+
+        <p class="perf-footnote">
+          * Figures shown reflect published reference specifications for the BMW M4 Competition Coupe; exact values depend on drivetrain and regional specification.
+        </p>
+      </div>
+    </section>
+
+    <!-- SCENE 05 — DESIGN. -->
+    <section class="scene scene--design" id="scene-05" data-scene-index="4">
+      <div class="design-grid">
+        <div class="design-lead">
+          <span class="eyebrow">05 // FORM &amp; AERODYNAMICS</span>
+          <h2 class="section-title">DESIGN<span class="accent-dot">.</span></h2>
+          <p class="design-lead__statement">
+            Every surface on the BMW M4 serves airflow, thermal management, and wide-track stability. Nothing is ornamental.
+          </p>
+        </div>
+
+        <div class="design-pillars">
+          <div class="pillar-item" data-reveal>
+            <div class="pillar-item__num">I</div>
+            <div class="pillar-item__content">
+              <h3>VERTICAL M KIDNEY GRILLE</h3>
+              <p>Frameless horizontal slats engineered to channel maximum cooling air directly into high-load heat exchangers.</p>
+            </div>
+          </div>
+
+          <div class="pillar-item" data-reveal>
+            <div class="pillar-item__num">II</div>
+            <div class="pillar-item__content">
+              <h3>FLARED WHEEL ARCHES &amp; M GILLS</h3>
+              <p>Muscular fender geometry accommodates staggered performance wheel and tire setups while venting wheel-house pressure.</p>
+            </div>
+          </div>
+
+          <div class="pillar-item" data-reveal>
+            <div class="pillar-item__num">III</div>
+            <div class="pillar-item__content">
+              <h3>SCULPTED ROOF &amp; REAR DIFFUSER</h3>
+              <p>Streamlined coupe roofline channels air cleanly toward the rear lip and quad-exhaust diffuser assembly.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCENE 06 — FINAL FRAME. -->
+    <section class="scene scene--final" id="scene-06" data-scene-index="5">
+      <div class="final-frame">
+        <div class="final-frame__top">
+          <span class="eyebrow">06 // END OF REEL</span>
+          <div class="m-stripes" aria-hidden="true">
+            <span class="m-stripe m-stripe--light-blue"></span>
+            <span class="m-stripe m-stripe--dark-blue"></span>
+            <span class="m-stripe m-stripe--red"></span>
+          </div>
+        </div>
+
+        <div class="final-frame__center">
+          <h2 class="final-headline">
+            <span>BUILT</span>
+            <span>DIFFERENT<span class="accent-dot">.</span></span>
+          </h2>
+        </div>
+
+        <div class="final-frame__bottom">
+          <div class="final-meta">
+            <span>BMW M4</span>
+            <span>&bull;</span>
+            <span>INTERACTIVE CAMPAIGN EXPERIENCE</span>
+          </div>
+
+          <div class="final-actions">
+            <a href="#scene-02" class="btn-campaign">
+              <span>RETURN TO 3D SHOWROOM</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </a>
+            <a href="#scene-01" class="btn-campaign btn-campaign--ghost">
+              <span>REPLAY OPENING</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Main Application Script -->
+  <script type="module" src="script.js"></script>
+</body>
+</html>
